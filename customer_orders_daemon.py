@@ -102,3 +102,55 @@ def read_emails():                  #does what it sais on the tin
             is_message = False
             fp.seek(0)
             for eachline in fp:
+                eachline = eachline.strip()
+                if len(eachline) == 0:
+                    is_message = True
+                if is_message and len(eachline) > 0 and ('@' in eachline.split()[0].strip()):
+                    new_user_list.append(eachline.split()[0].strip())
+            fp.close()
+            for eachline in new_user_list: np.write(eachline + '\n')
+            remove(file_name)
+            np.close()
+
+def confirm_order(email, status, order_list = False): #status is failed (for bad formatting) or success or request or not_listed
+    FROM = 'customer_service@mywebsite.com'
+    TO = email
+    BODY_success = "\r\nOrder completed! See you on Wednesday between 12 and 3pm\r\n\r\nThe Food Coop Team\r\n(automated email. \
+write to customer_service@mywebsite.com if you're having trouble)\r\n"
+    SUBJECT_success = "Food Coop: order completed"
+    BODY_failed = "\r\nwe couldn't complete your order! computer sais: 'you entered order in the wrong format'\
+\r\nIf you think its wrong please email me at customer_service@mywebsite.com\r\n"
+    SUBJECT_failed = "Food Coop couldn't complete your order this time"
+    BODY_failed_helper = "\r\nthe following couldnt process their food coop order: " + email + "\r\n"
+    SUBJECT_failed_helper = "\r\n food coop order failed for " + email
+    BODY_request = order_list
+    SUBJECT_request = "food coop order list"
+    BODY_not_listed = "\r\nFood Coop couldn't complete your order because you are not on our Food Coop members list!\r\n\
+To get on the list just speak to one of the Food Coop team by emailing customer_service@mywebsite.com\r\n"
+    SUBJECT_not_listed = "Food Coop - you need to register first"
+
+    if status == 'success':
+        message = 'From: ' + FROM + '\r\nTo: ' + TO + '\r\nSubject: ' + SUBJECT_success + '\r\n\r\n' + BODY_success
+    elif status == 'failed':
+        message = 'From: ' + FROM + '\r\nTo: ' + TO + '\r\nSubject: ' + SUBJECT_failed + '\r\n\r\n' + BODY_failed
+        message_helper = 'From: ' + FROM + '\r\nTo: ' + TO + '\r\nSubject: ' \
++ SUBJECT_failed_helper + '\r\n\r\n' + BODY_failed_helper
+    elif status == 'request':
+        message = 'From: ' + FROM + '\r\nTo: ' + TO + '\r\nSubject: ' + SUBJECT_request + '\r\n\r\n' + BODY_request
+    elif status == 'not_listed':
+        message = 'From: ' + FROM + '\r\nTo: ' + TO + '\r\nSubject: ' + SUBJECT_not_listed + '\r\n\r\n' + BODY_not_listed
+
+    SMTPSERVER = 'localhost'
+
+    sendserver = smtp(SMTPSERVER)
+    errors = sendserver.sendmail(FROM, TO, message)
+
+    if status =='failed':
+        errors_helper = sendserver.sendmail(FROM, 'customer_service@mywebsite.com', message_helper)
+        if len(errors_helper) != 0:
+            fp = open('errors', 'a')
+            for eachline in errors:
+                fp.write(eachline+'\n')
+            fp.write('\n\n')
+            fp.close()
+
