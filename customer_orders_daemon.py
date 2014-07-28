@@ -55,3 +55,50 @@ def read_emails():                  #does what it sais on the tin
                 email = email_re(eachline)
             if eachline[0].strip() == 'From:' and is_listed(email_re(eachline), 'admin'):
                 islisted_admin = True
+                email = email_re(eachline)
+            elif eachline[0].strip() == 'From:': email = email_re(eachline) #email not listed so will send them an email about coop
+
+        if order and islisted:
+            is_message = False
+            fp.close()
+            fp = open(file_name,'r')
+            for eachline in fp:
+                if len(eachline.strip()) == 0:
+                    is_message = True
+                if is_message and len(eachline.strip()) > 0:
+                    order_list.append(eachline.strip())
+            fp.close()
+            if is_order_format(order_list):
+                order_list = is_order_format(order_list)
+                fp = open('/home/my_username/coop/orders','a')
+                fp.write(email + '\n')
+                for eachline in order_list:
+                    if eachline: fp.write(eachline + '\n')
+                fp.write('\n\n')
+                fp.close()
+
+                confirm_order(email, 'success')
+                remove(file_name)
+
+            else:
+                confirm_order(email, 'failed')
+                remove(file_name)
+
+        elif order and not islisted:
+            confirm_order(email, 'not_listed')
+            remove(file_name)
+
+        elif request and islisted_admin:  #request order list
+            message_body = '\r\n'
+            fp = open('/home/my_username/coop/orders', 'r')
+            for eachline in fp:
+                message_body = message_body + eachline.strip() + '\r\n'
+            confirm_order(email, 'request', message_body)
+            remove(file_name)
+            fp.close()
+
+        elif new_user and islisted_admin: #add a new user
+            np = open('members','a')
+            is_message = False
+            fp.seek(0)
+            for eachline in fp:
