@@ -154,3 +154,17 @@ To get on the list just speak to one of the Food Coop team by emailing customer_
             fp.write('\n\n')
             fp.close()
 
+    sendserver.quit()
+
+    if len(errors) != 0:
+        fp = open('errors', 'a')
+        for eachline in errors:
+            fp.write(eachline+'\n')
+        fp.write('\n\n')
+        fp.close()
+
+
+while True:
+    sleep(10)
+    read_emails()
+ 
