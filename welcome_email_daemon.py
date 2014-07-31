@@ -4,7 +4,7 @@ from time import sleep
 
 
 def welcome_bot():
- fp = open('busters','r')
+ fp = open('members','r')
  np = open('welcomed','a')
  for eachline in fp:
     if not is_in(eachline.strip()):
